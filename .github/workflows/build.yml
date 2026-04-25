@@ -3,49 +3,72 @@ name: Build Flutter APK
 on:
   push:
     branches: [ "main" ]
+  # Allows you to trigger the workflow manually from GitHub UI
+  workflow_dispatch:
 
 jobs:
   build:
+    name: Build Android Release APK
     runs-on: ubuntu-latest
+    timeout-minutes: 35
 
     steps:
-      # 1. Checkout repository
+      # 1. Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Setup Java (required for Android builds)
+      # 2. Setup Java (required for Android/Gradle)
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'gradle'
 
-      # 3. Setup Flutter SDK
+      # 3. Setup Flutter (latest stable version)
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: '3.41.7'
+          channel: 'stable'
           cache: true
 
-      # 4. Get dependencies
+      # 4. Show Flutter environment (very helpful when build fails)
+      - name: Flutter Doctor
+        run: flutter doctor -v
+
+      # 5. Clean previous build artifacts (highly recommended in CI)
+      - name: Flutter Clean
+        run: flutter clean
+
+      # 6. Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 5. Analyze project (non-blocking)
+      # 7. Analyze the project (fails build if there are issues)
       - name: Analyze project
-        run: flutter analyze || true
+        run: flutter analyze
 
-      # 6. Build APK (RELEASE)
-      - name: Build APK
+      # Optional: Run tests (uncomment if you have unit/widget tests)
+      # - name: Run tests
+      #   run: flutter test
+
+      # 8. Build Release APK
+      - name: Build APK (Release)
         run: flutter build apk --release
 
-      # 7. Debug build output (VERY IMPORTANT)
+      # 9. Verify the built APK exists and show details
       - name: Verify APK output
-        run: find build -name "*.apk" || true
+        run: |
+          echo "=== Listing build directory ==="
+          ls -la build/app/outputs/flutter-apk/
+          echo "=== APK File Details ==="
+          ls -lh build/app/outputs/flutter-apk/app-release.apk || echo "❌ APK not found!"
 
-      # 8. Upload APK artifact
+      # 10. Upload APK as artifact (download from GitHub Actions tab)
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
+          name: app-release-apk
           path: build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
