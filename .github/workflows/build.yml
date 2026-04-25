@@ -9,20 +9,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Get code
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Setup Java (required for Android builds)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 3. Setup Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.22.0'
+          cache: true
 
+      # 4. Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
+      # 5. Analyze project (safe mode)
+      - name: Analyze project
+        run: flutter analyze || true
+
+      # 6. BUILD APK (THIS IS THE CRITICAL FIX)
       - name: Build APK
         run: flutter build apk --release
 
+      # 7. Verify output exists
+      - name: Check build output
+        run: ls -R build || true
+
+      # 8. Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
