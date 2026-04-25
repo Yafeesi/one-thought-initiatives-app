@@ -9,7 +9,7 @@ jobs:
   build:
     name: Build Android Release APK
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
 
     steps:
       - name: Checkout code
@@ -46,10 +46,10 @@ jobs:
 
       - name: Verify APK output
         run: |
-          echo "=== Listing build directory ==="
+          echo "=== Listing APK directory ==="
           ls -la build/app/outputs/flutter-apk/
-          echo "=== APK File Details ==="
-          ls -lh build/app/outputs/flutter-apk/app-release.apk || echo "❌ APK not found!"
+          echo "=== APK Details ==="
+          ls -lh build/app/outputs/flutter-apk/app-release.apk || echo "❌ APK file not found!"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
