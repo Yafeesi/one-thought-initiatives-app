@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Flutter APK
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Get code
+      # 1. Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -20,32 +20,32 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3. Setup Flutter
+      # 3. Setup Flutter SDK
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.22.0'
           cache: true
 
-      # 4. Install dependencies
+      # 4. Get dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 5. Analyze project (safe mode)
+      # 5. Analyze project (non-blocking)
       - name: Analyze project
         run: flutter analyze || true
 
-      # 6. BUILD APK (THIS IS THE CRITICAL FIX)
+      # 6. Build APK (RELEASE)
       - name: Build APK
         run: flutter build apk --release
 
-      # 7. Verify output exists
-      - name: Check build output
-        run: ls -R build || true
+      # 7. Debug build output (VERY IMPORTANT)
+      - name: Verify APK output
+        run: find build -name "*.apk" || true
 
-      # 8. Upload APK
+      # 8. Upload APK artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/*.apk
