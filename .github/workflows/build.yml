@@ -12,11 +12,9 @@ jobs:
     timeout-minutes: 35
 
     steps:
-      # 1. Checkout code - Updated to v6 (supports Node 24)
       - name: Checkout code
         uses: actions/checkout@v6
 
-      # 2. Setup Java - Updated to v5 (supports Node 24)
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
@@ -24,7 +22,6 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      # 3. Setup Flutter (latest stable)
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -32,27 +29,21 @@ jobs:
           channel: 'stable'
           cache: true
 
-      # 4. Show environment info
       - name: Flutter Doctor
         run: flutter doctor -v
 
-      # 5. Clean
       - name: Flutter Clean
         run: flutter clean
 
-      # 6. Get dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 7. Analyze
       - name: Analyze project
         run: flutter analyze
 
-      # 8. Build Release APK
       - name: Build APK (Release)
         run: flutter build apk --release
 
-      # 9. Verify output
       - name: Verify APK output
         run: |
           echo "=== Listing build directory ==="
@@ -60,7 +51,6 @@ jobs:
           echo "=== APK File Details ==="
           ls -lh build/app/outputs/flutter-apk/app-release.apk || echo "❌ APK not found!"
 
-      # 10. Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
